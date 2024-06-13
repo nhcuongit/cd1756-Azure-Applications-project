@@ -69,6 +69,7 @@ def login():
             app.logger.info('Invalid login attempt')
             flash('Invalid username or password')
             return redirect(url_for('login'))
+
         app.logger.info(f'{form.username.data} logged in successfully')
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
