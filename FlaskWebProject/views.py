@@ -19,7 +19,6 @@ imageSourceUrl = 'https://'+ app.config['BLOB_ACCOUNT']  + '.blob.core.windows.n
 @app.route('/home')
 @login_required
 def home():
-    app.logger.info('Opened "/home".')
     user = User.query.filter_by(username=current_user.username).first_or_404()
     posts = Post.query.all()
     return render_template(
@@ -33,11 +32,9 @@ def home():
 def new_post():
     form = PostForm(request.form)
     if form.validate_on_submit():
-        app.logger.info('Adding the post.')
         post = Post()
         post.save_changes(form, request.files['image_path'], current_user.id, new=True)
         return redirect(url_for('home'))
-    app.logger.info('Opened "/new_post" with "GET" method.')
     return render_template(
         'post.html',
         title='Create Post',
@@ -52,10 +49,8 @@ def post(id):
     post = Post.query.get(int(id))
     form = PostForm(formdata=request.form, obj=post)
     if form.validate_on_submit():
-        app.logger.info(f'Saving the post "{id}".')
         post.save_changes(form, request.files['image_path'], current_user.id)
         return redirect(url_for('home'))
-    app.logger.info(f'Opened the post "{id}".')
     return render_template(
         'post.html',
         title='Edit Post',
@@ -65,15 +60,16 @@ def post(id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    app.logger.info(f'Sign in to the application.')
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
+            app.logger.info('Invalid login attempt')
             flash('Invalid username or password')
             return redirect(url_for('login'))
+        app.logger.info(f'{form.username.data} logged in successfully')
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
         if not next_page or urlsplit(next_page).netloc != '': # or url_parse(next_page).netloc != '':
@@ -109,7 +105,6 @@ def authorized():
 
 @app.route('/logout')
 def logout():
-    app.logger.info(f'Sign out of the application.')
     logout_user()
     if session.get("user"): # Used MS Login
         # Wipe out user and its token cache from session
