@@ -19,6 +19,7 @@ imageSourceUrl = 'https://'+ app.config['BLOB_ACCOUNT']  + '.blob.core.windows.n
 @app.route('/home')
 @login_required
 def home():
+    app.logger.info('Opened "/home".')
     user = User.query.filter_by(username=current_user.username).first_or_404()
     posts = Post.query.all()
     return render_template(
@@ -32,9 +33,11 @@ def home():
 def new_post():
     form = PostForm(request.form)
     if form.validate_on_submit():
+        app.logger.info('Adding the post.')
         post = Post()
         post.save_changes(form, request.files['image_path'], current_user.id, new=True)
         return redirect(url_for('home'))
+    app.logger.info('Opened "/new_post" with "GET" method.')
     return render_template(
         'post.html',
         title='Create Post',
@@ -49,8 +52,10 @@ def post(id):
     post = Post.query.get(int(id))
     form = PostForm(formdata=request.form, obj=post)
     if form.validate_on_submit():
+        app.logger.info(f'Saving the post "{id}".')
         post.save_changes(form, request.files['image_path'], current_user.id)
         return redirect(url_for('home'))
+    app.logger.info(f'Opened the post "{id}".')
     return render_template(
         'post.html',
         title='Edit Post',
@@ -60,6 +65,7 @@ def post(id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    app.logger.info(f'Sign in to the application.')
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     form = LoginForm()
@@ -86,7 +92,11 @@ def authorized():
     if request.args.get('code'):
         cache = _load_cache()
         # TODO: Acquire a token from a built msal app, along with the appropriate redirect URI
-        result = None
+        result = _build_msal_app(cache=cache).acquire_token_by_authorization_code(
+            request.args['code'],
+            scopes=Config.SCOPE,
+            redirect_uri=url_for('authorized', _external=True, _scheme='https')
+        )
         if "error" in result:
             return render_template("auth_error.html", result=result)
         session["user"] = result.get("id_token_claims")
@@ -99,6 +109,7 @@ def authorized():
 
 @app.route('/logout')
 def logout():
+    app.logger.info(f'Sign out of the application.')
     logout_user()
     if session.get("user"): # Used MS Login
         # Wipe out user and its token cache from session
@@ -112,17 +123,29 @@ def logout():
 
 def _load_cache():
     # TODO: Load the cache from `msal`, if it exists
-    cache = None
+    cache = msal.SerializableTokenCache()
+    if session.get('token_cache'):
+        cache.deserialize(session['token_cache'])
     return cache
 
 def _save_cache(cache):
     # TODO: Save the cache, if it has changed
-    pass
+    if cache.has_state_changed:
+        session['token_cache'] = cache.serialize()
 
 def _build_msal_app(cache=None, authority=None):
     # TODO: Return a ConfidentialClientApplication
-    return None
+    return msal.ConfidentialClientApplication(
+        Config.CLIENT_ID,
+        authority=authority or Config.AUTHORITY,
+        client_credential=Config.CLIENT_SECRET,
+        token_cache=cache
+    )
 
 def _build_auth_url(authority=None, scopes=None, state=None):
     # TODO: Return the full Auth Request URL with appropriate Redirect URI
-    return None
+    return _build_msal_app(authority=authority).get_authorization_request_url(
+        scopes or [],
+        state=state or str(uuid.uuid4()),
+        redirect_uri=url_for('authorized', _external=True, _scheme='https')
+    )

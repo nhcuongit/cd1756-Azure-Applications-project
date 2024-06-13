@@ -6,12 +6,12 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'secret-key'
 
-    BLOB_ACCOUNT = os.environ.get('BLOB_ACCOUNT') or 'cuongnh20blob'
-    BLOB_STORAGE_KEY = os.environ.get('BLOB_STORAGE_KEY') or 'iL5HNZE204AM5vKTeEul/+xFf7tvDCJmrHhScY9GhY5NKH+At+uPpJ9R7l13+sYuZG7JDFxd81r++AStaNV+rg==' # TODO ?
+    BLOB_ACCOUNT = os.environ.get('BLOB_ACCOUNT') or 'cuongnh20storage'
+    BLOB_STORAGE_KEY = os.environ.get('BLOB_STORAGE_KEY') or 'JSNSMSONlvTKttkU7sF49jqiZGxCuM3/+eaQwALwPQVEPx0ejoI+GQBiE7MTcz2kd1Q71dN8rFrY+AStVFe0ww=='
     BLOB_CONTAINER = os.environ.get('BLOB_CONTAINER') or 'images'
 
     SQL_SERVER = os.environ.get('SQL_SERVER') or 'cuongnh20.database.windows.net'
-    SQL_DATABASE = os.environ.get('SQL_DATABASE') or 'cmsdb'
+    SQL_DATABASE = os.environ.get('SQL_DATABASE') or 'cuongnh20_db'
     SQL_USER_NAME = os.environ.get('SQL_USER_NAME') or 'cuongnh20'
     SQL_PASSWORD = os.environ.get('SQL_PASSWORD') or 'Sql@02071708'
     # Below URI may need some adjustments for driver version, based on your OS, if running locally
@@ -20,7 +20,7 @@ class Config(object):
 
     ### Info for MS Authentication ###
     ### As adapted from: https://github.com/Azure-Samples/ms-identity-python-webapp ###
-    CLIENT_SECRET = "ENTER_CLIENT_SECRET_HERE"
+    CLIENT_SECRET = "4Zi8Q~SZ0NFj9v~z6xgSZ5dLQkSwyEEXJtK4xaL5"
     # In your production app, Microsoft recommends you to use other ways to store your secret,
     # such as KeyVault, or environment variable as described in Flask's documentation here:
     # https://flask.palletsprojects.com/en/1.1.x/config/#configuring-from-environment-variables
@@ -31,9 +31,9 @@ class Config(object):
     AUTHORITY = "https://login.microsoftonline.com/common"  # For multi-tenant app, else put tenant name
     # AUTHORITY = "https://login.microsoftonline.com/Enter_the_Tenant_Name_Here"
 
-    CLIENT_ID = "ENTER_CLIENT_ID_HERE"
+    CLIENT_ID = "50bcfa10-b475-49cf-a3e7-9fea4d22e1f9"
 
-    REDIRECT_PATH = "/getAToken"  # Used to form an absolute URL; must match to app's redirect_uri set in AAD
+    REDIRECT_PATH = "/get_a_token"  # Used to form an absolute URL; must match to app's redirect_uri set in AAD
 
     # You can find the proper permission names from this document
     # https://docs.microsoft.com/en-us/graph/permissions-reference
